@@ -41,8 +41,8 @@ class Learner {
    * \brief train
    */
   void Run() {
-    if (!IsDistributed() || !strcmp(getenv("DMLC_ROLE"), "scheduler")) {
-      RunScheduler();
+    if (!IsDistributed() || !strcmp(getenv("DMLC_ROLE"), "scheduler")) { //  不是分布式
+      RunScheduler();  //  51
     } else {
       tracker_->Wait();
     }

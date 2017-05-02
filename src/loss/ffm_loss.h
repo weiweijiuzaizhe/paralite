@@ -52,7 +52,7 @@ class FFMLoss : public Loss {
                const std::vector<SArray<char>>& param,
                SArray<real_t>* pred) override {
     CHECK_EQ(param.size(), 2);
-    Predict(data,
+    Predict(data,  // 61
             SArray<real_t>(param[0]),
             SArray<int>(param[1]),
             pred);
@@ -64,10 +64,12 @@ class FFMLoss : public Loss {
                SArray<real_t>* pred) {
     SArray<real_t> w = weights;
     int V_dim = param_.V_dim;
-#pragma omp parallel num_threads(nthreads_)
+#pragma omp parallel num_threads(nthreads_) //预编译,使得下面的这段可以多线程执行
     {
       Range rg = Range(0, data.size).Segment(
-          omp_get_thread_num(), omp_get_num_threads());
+          omp_get_thread_num(), 
+          omp_get_num_threads()
+          );
 
       for (size_t i = rg.begin; i < rg.end; ++i) {
         if (data.offset[i] == data.offset[i+1]) continue;
@@ -80,7 +82,7 @@ class FFMLoss : public Loss {
             if (V_pos[ind2] < 0) continue;
             int f1 = data.field[j1], f2 = data.field[j2];
             real_t ww = 0.;
-            for (int k = 0; k < V_dim; ++k) {
+            for (int k = 0; k < V_dim; ++k) {   //用k * n 来拟合 n*n
               ww += weights[V_pos[ind1] + f1 * V_dim + k] * \
                     weights[V_pos[ind2] + f2 * V_dim + k];
             }

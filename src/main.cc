@@ -63,16 +63,26 @@ int main(int argc, char *argv[]) {
   // run task
   switch (param.task) {
     case kTrain:
+    {
+
+
+
+
+    }
+    
+
+
     case kPredict:
       {
-      Learner* learner = Learner::Create(param.learner);
+      Learner* learner = Learner::Create(param.learner);  //  颖峰说kTrain和predict是共享的,都放到learner中做
       kwargs_remain.push_back(std::make_pair("task", std::to_string(param.task)));
       WarnUnknownKWArgs(param, learner->Init(kwargs_remain));
       LOG(INFO) << "start run learner";
-      learner->Run();
+      learner->Run();  //  43
       delete learner;
       }
       break;
+    
     case kDumpModel:
       {
       Dump dumper;

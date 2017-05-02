@@ -49,21 +49,24 @@ void BCDLearner::Process(const std::string& args, std::string* rets) {
   delete ss;
 }
 void BCDLearner::RunScheduler() {
-  using bcd::Job;
+  using bcd::Job;   // 使用命名空间bcd下的子空间Job
   // load data
   LOG(INFO) << "loading data... ";
-  Job load; load.type = Job::kPrepareData;
+  Job load; 
+  load.type = Job::kPrepareData;
   std::vector<real_t> load_rets;
   IssueJobAndWait(NodeID::kWorkerGroup, load, &load_rets);
   LOG(INFO) << "loaded " << load_rets.back() << " examples";
 
   // partition feature group and build feature map
-  Job build; build.type = Job::kBuildFeatureMap;
+  Job build; 
+  build.type = Job::kBuildFeatureMap;
   std::vector<std::pair<int, int>> feagrp;
-  int nfeablk = load_rets.size()-2;
-  for (int i = 0; i < nfeablk; ++i) {
-    int nblk = static_cast<int>(std::ceil(
-        load_rets[i] / load_rets[nfeablk] * param_.block_ratio));
+  int nfeablk = load_rets.size()-2;    // nfeablk:number of feature bulk
+  for (int i = 0; i < nfeablk; ++i) {  
+    int nblk = static_cast<int>(std::ceil( // nblk : number of bulk
+        load_rets[i] / load_rets[nfeablk] * param_.block_ratio)
+    );
     if (nblk > 0) feagrp.push_back(std::make_pair(i, nblk));
   }
   bcd::PartitionFeature(
@@ -81,7 +84,7 @@ void BCDLearner::RunScheduler() {
     iter.feablks = feablks;
     std::vector<real_t> progress;
     IssueJobAndWait(NodeID::kWorkerGroup + NodeID::kServerGroup, iter, &progress);
-    for (const auto& cb : epoch_end_callback_) {
+    for (const auto& cb : epoch_end_callback_) {  // epoch_end_callback_ 是在哪里赋值的呢?
       cb(epoch_, progress);
     }
     real_t cnt = progress[0];
@@ -258,7 +261,7 @@ void BCDLearner::CalcGrad(int rowblk_id, int colblk_id,
   }
 
   // calc grad
-  loss_->CalcGrad(tile.data.GetBlock(), {SArray<char>(pred_[rowblk_id]),
+  loss_->CalcGrad(tile.data.GetBlock(), {SArray<char>(pred_[rowblk_id]),  // 核心是修改这一行
           SArray<char>(grad_pos), SArray<char>(delta)}, grad);
 }
 
@@ -290,7 +293,7 @@ void BCDLearner::UpdtPred(int rowblk_id, int colblk_id,
   // predict
   loss_->Predict(tile.data.GetBlock(),
                  {SArray<char>(delta_w), SArray<char>(w_pos)},
-                 &pred_[rowblk_id]);
+                 &pred_[rowblk_id]);  //  51
 
   // evaluate
   if (!progress) return;
